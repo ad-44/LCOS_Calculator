@@ -1,0 +1,14 @@
+name: calculator
+
+channels:
+- conda-forge
+- default
+
+dependencies:
+- pandas
+- pyomo
+- plotly
+- glpk
+- pip
+- pip :
+  - streamlit
