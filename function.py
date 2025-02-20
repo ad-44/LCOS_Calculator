@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb  4 11:41:17 2025
-
-@author: debille-a-1
-"""
 def capex_func(power,capexmw): 
     capex = power * capexmw * 1000
     return capex
