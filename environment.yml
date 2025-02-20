@@ -8,6 +8,7 @@ dependencies:
 - pandas
 - pyomo
 - plotly
+- glpk
 - pip
 - pip :
   - streamlit
