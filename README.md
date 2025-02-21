@@ -49,7 +49,7 @@ In order to give an approximate LCOS value, this calculator optimizes the yearly
 **Storage system:**
 - *Installed capacity* : nominal power of the storage system in MW
 - *Storage capacity* : maximum energy that the storage system can hold in MWh
-- *Roundtrip efficiency* : ratio of energy put in to energy retrieved from storage in %
+- *Round-trip efficiency* : ratio of energy put in to energy retrieved from storage in %
 
 **Costs and lifetime:**
 - *Capital expenditure* : expenses inherent to the storage acquisition in k€/MW
