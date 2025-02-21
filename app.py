@@ -11,11 +11,15 @@ from plotly.subplots import make_subplots
 #Interface options
 st.set_page_config(layout="wide")
 
-
-#Display
+#Main title
 st.title("Levelized Cost of Storage Calculator")
 st.divider()
 
+#Side bar button to access documentation
+with st.sidebar:
+    st.link_button('Documentation','https://github.com/ad-44/LCOS_Calculator/blob/main/README.md')
+
+#Input interface
 col1, col2, col3 = st.columns([0.4,0.4,0.2], gap="large")
 
 with col2:
@@ -51,16 +55,22 @@ with st.container(border=True):
             placeholder='Select a model...'
             )   
     
-    #Button 
-    
+    #Launch calculator button
     launch = st.button('Launch calculator')
     input_list = [power,capacity,eff,capexmw,opexmw,life,discount,spot_year,model]
+    zero_list = [power,capacity,eff,life,discount]
     
 if launch :
-    
+
+    #Error messages
     for item in input_list:
         if item == None:
             st.error('A parameter is missing, please check your inputs.')
+            st.stop()
+            
+    for item in zero_list:
+        if item == 0:
+            st.error("Installed capacity, storage capacity, round-trip efficiency, lifetime and discount rate can't be equal to 0")
             st.stop()
             
     with st.spinner("Calculation in progress...", show_time = True):
@@ -170,7 +180,7 @@ if launch :
                 for index in v: 
                     results.at[index, v.name] = pyo.value(v[index])
         
-        
+        #indicators calculation
         crf = function.crf_func(discount, life)
         capex = function.capex_func(power, capexmw)
         opex = function.opex_func(power, opexmw)
@@ -211,7 +221,7 @@ if launch :
         results_formatted = results_formatted.style.format("{:,.1f}")
         model_parameters = model_parameters.style.format("{:,.1f}")
         
-        #Display in streamlit
+        #Ouput display
         col7, col8, col9 = st.columns([0.4,0.4,0.2], gap="large")
             
         with col8:
