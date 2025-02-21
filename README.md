@@ -10,7 +10,9 @@ Access Link : https://lcoscalculator-crdftwyzdozbj8e9gkjgej.streamlit.app/
 
 The levelized cost of storage (LCOS) is an indicator used in the financial evaluation of energy storage technology. Based on the levelized cost of energy (LCOE), it defines the cost of energy as the profitability threshold of a technology express as a cost of generation such as : 
 
-$$ LCOS = \frac{\sum_{n=1}^{N}[I_n + FOM_n + C^p_n] * (1+r)^{-n}}{\sum_{n=1}^{N}E^{gen}_n*(1+r)^{-n}} + \frac{1}{2} $$
+'''math
+LCOS = \frac{\sum_{n=1}^{N}[I_n + FOM_n + C^p_n] * (1+r)^{-n}}{\sum_{n=1}^{N}E^{gen}_n*(1+r)^{-n}} + \frac{\sum_{n=1}^{T}AC_n*(1+r)^{-n}}{\sum_{n=1}^{N}E^{gen}_n*(1+r)^{-n}}
+'''
 
 $$ with \qquad C^p_n = \sum_{h=1}^{H}(P_{h}*E^{ch}_{h}), \qquad \forall  n \in N $$
 
