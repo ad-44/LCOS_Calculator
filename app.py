@@ -31,13 +31,13 @@ with st.container(border=True):
     #Inputs
     with col4: 
         st.subheader('Storage system')
-        power = st.number_input('Installed capacity (MW)',0.0,5000.0)
-        capacity = st.number_input('Storage capacity (MWh)',0.0,5000.0)
+        power = st.number_input('Installed capacity (MW)',0.0,5000.0,step=1.0)
+        capacity = st.number_input('Storage capacity (MWh)',0.0,5000.0,step=1.0)
         eff = st.number_input('Round Trip Efficiency (%)',0,100)
     with col5:
         st.subheader('Costs and lifetime')
-        capexmw = st.number_input('Capital expenditures (k€/MW)',0.0,5000.0)
-        opexmw = st.number_input('Operational expenditures (k€/MW)',0.0,5000.0)
+        capexmw = st.number_input('Capital expenditures (k€/MW)',0.0,5000.0,step=10.0)
+        opexmw = st.number_input('Operational expenditures (k€/MW)',0.0,5000.0,step=10.0)
         life = st.number_input('Lifetime',0,100)
         discount = st.number_input('Discount Rate (%)',0.0,100.0,step=0.5)
     with col6:
