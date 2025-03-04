@@ -75,10 +75,4 @@ The charts one, including several graphical representations of the results.
 
 Charts can be zoomed in with the mouse by selecting a range directly in the chart: 
 
-1. Selection
-
-![Zoom_select](https://github.com/ad-44/LCOS_Calculator/blob/main/screenshots/Zoom_select.png?raw=true)
-
-2. Display
-   
-![Zoom_selection](https://github.com/ad-44/LCOS_Calculator/blob/main/screenshots/Zoom_selection.png?raw=true)
+[streamlit_chart_data_navigation.webm](https://github.com/user-attachments/assets/848180a5-dbcf-4b4e-87f1-b8170c064a64)
