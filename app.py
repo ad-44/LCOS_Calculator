@@ -9,8 +9,11 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 #Interface options
-st.set_page_config(layout="wide") #wide layout
-    
+st.set_page_config(
+    layout="wide", 
+    initial_sidebar_state="expanded"
+    ) 
+
     #sidebar width
 st.markdown(
     """
