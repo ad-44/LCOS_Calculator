@@ -9,10 +9,19 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 #Interface options
-st.set_page_config(
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(layout="wide") #wide layout
+    
+    #sidebar width
+st.markdown(
+    """
+    <style>
+        section[data-testid="stSidebar"] {
+            width: 350px !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+) 
 
 #Main title and documentation button
 col1, col2, col3 = st.columns([0.2,0.6,0.2], gap="large")
@@ -29,35 +38,74 @@ st.divider()
 
 #Input interface
 with st.sidebar:
-    st.markdown('<center><b style="font-size:20px;">Inputs</b></center>',unsafe_allow_html=True)
-    st.divider()
-
-    #Inputs
-    st.markdown('<b style="font-size:16px;">Storage system</b>',unsafe_allow_html=True)
-    power = st.number_input('Installed capacity (MW)',0.0,5000.0,step=1.0)
-    capacity = st.number_input('Storage capacity (MWh)',0.0,5000.0,step=1.0)
-    eff = st.number_input('Round Trip Efficiency (%)',0,100)
+    cola, colb = st.columns([0.6,0.4])
     
-    st.markdown('<b style="font-size:16px;">Costs and lifetime</b>',unsafe_allow_html=True)
-    capexmw = st.number_input('Capital expenditures (k€/MW)',0.0,5000.0,step=10.0)
-    opexmw = st.number_input('Operational expenditures (k€/MW)',0.0,5000.0,step=10.0)
-    life = st.number_input('Lifetime (year)',0,100)
-    discount = st.number_input('Discount Rate (%)',0.0,100.0,step=0.5)
-
+    with cola:
+        st.markdown('<b style="font-size:20px;">Inputs</b>',unsafe_allow_html=True)
+    
+    with colb:
+        #reset data button
+        reset_button = st.button('Reset inputs', type='secondary')
+        
+        if reset_button:
+            st.session_state.power = 0
+            st.session_state.capacity = 0
+            st.session_state.eff = 0
+            st.session_state.capexmw = 0
+            st.session_state.opexmw = 0
+            st.session_state.life = 0
+            st.session_state.discount = 0
+            st.session_state.spot_year = None
+            st.session_state.model = None
+            st.session_state.profile = None
+        
+    st.divider()
+            
+    #Inputs
     st.markdown('<b style="font-size:16px;">Model parameters</b>',unsafe_allow_html=True)
     spot_year = st.selectbox(
         'Year to simulate',
         ('2014','2015','2016','2017','2018','2019','2020','2021','2022','2023'),
         index=None,
-        placeholder='Select a year...'
+        placeholder='Select a year...',
+        key='spot_year'
         )
     model = st.selectbox(
         'Optimisation time window',
         ('Year','Month','Week','2 days','1 day'),
         index=None,
-        placeholder='Select a model...'
-        )   
+        placeholder='Select a model...',
+        key='model'
+        )  
+    profile = st.selectbox(
+        'Preload a storage profile (optional)',
+        ("Grand'Maison PHS"),
+        index=None,
+        placeholder='Select a storage technology',
+        key='profile'
+        )
     
+    #Preloaded profile
+    if profile == "Grand'Maison PHS":
+        st.session_state.power = 1800
+        st.session_state.capacity = 52963
+        st.session_state.eff = 80
+        st.session_state.capexmw = 1406
+        st.session_state.opexmw = 4.6
+        st.session_state.life = 65
+        st.session_state.discount = 4.5
+    
+    st.markdown('<b style="font-size:16px;">Storage system</b>',unsafe_allow_html=True)
+    power = st.number_input('Installed capacity (MW)',0.0,5000.0,step=1.0,key='power')
+    capacity = st.number_input('Storage capacity (MWh)',0.0,60000.0,step=1.0,key='capacity')
+    eff = st.number_input('Round Trip Efficiency (%)',0,100,key='eff')
+    
+    st.markdown('<b style="font-size:16px;">Costs and lifetime</b>',unsafe_allow_html=True)
+    capexmw = st.number_input('Capital expenditures (k€/MW)',0.0,5000.0,step=10.0,key="capexmw")
+    opexmw = st.number_input('Operational expenditures (k€/MW)',0.0,5000.0,step=10.0,key="opexmw")
+    life = st.number_input('Lifetime (year)',0,100,key='life')
+    discount = st.number_input('Discount Rate (%)',0.0,100.0,step=0.5,key='discount') 
+        
     #Launch calculator button
     input_list = [power,capacity,eff,capexmw,opexmw,life,discount,spot_year,model]
     zero_list = [power,capacity,eff,life,discount]
@@ -83,6 +131,7 @@ if launch :
         
         if spot_year != None:
             spot_data = rawprices[spot_year]
+            gm_data = rawGM[spot_year]
             index_hours = pd.date_range(spot_year+"-01-01 00:00",spot_year+"-12-31 23:00",freq='h').tolist()
         else:
             pass
@@ -114,7 +163,7 @@ if launch :
                 segments = list(range(period*num_segments,len(spot_data)))
             else:
                 segments = list(range(period*num_segments, (period + 1) * num_segments))
-        
+                   
             m = pyo.ConcreteModel('LCOS optimisation')
         
             #Set and variables
@@ -182,6 +231,38 @@ if launch :
                 for index in v: 
                     results.at[index, v.name] = pyo.value(v[index])
         
+        #GM data calculation and correction if selected
+        gm_data_adj = (gm_data/1800) * power
+        gm_profit = gm_data_adj * spot_data         
+       
+        #Correction between bissextile years and non-bissextile one
+        bis_year = ['2014','2015','2017','2018','2019','2021','2022','2023']
+        if spot_year in bis_year:
+            results = results.iloc[:-24]
+            gm_profit = gm_profit.iloc[:-24]
+            gm_data = gm_data.iloc[:-24]
+            spot_data = spot_data.iloc[:-24]
+            
+        #returning real value for GMPHS
+        if profile =="Grand'Maison PHS":
+            gm_ch = pd.DataFrame(gm_data)
+            gm_ch[gm_ch>0]=0
+            gm_ch=-gm_ch
+            
+            gm_dis = pd.DataFrame(gm_data)
+            gm_dis[gm_dis<0]=0
+            
+            results['ch'] = gm_ch
+            results['dis'] = gm_dis
+            results['stock'] = 0
+            results['chcost'] = results['ch'] * spot_data
+            results['revenu'] = results['dis'] * spot_data
+            results['profit'] = results['revenu'] - results['chcost']
+            results['ondis'] = 0
+            results['onch'] = 0
+        else: 
+            pass
+        
         #indicators calculation
         crf = function.crf_func(discount, life)
         capex = function.capex_func(power, capexmw)
@@ -206,16 +287,12 @@ if launch :
         synthesis = pd.DataFrame(data_synt,index_synt,columns=['Values'])
         
         #hourly results df
-           
-            #Correction between bissextile years and non-bissextile one
-        bis_year = ['2014','2015','2017','2018','2019','2021','2022','2023']
-        if spot_year in bis_year:
-            results = results.iloc[:-24]
             
         col_results = ['Charged energy (MW)', 'Discharged energy (MW)','Stock (MWh)','Revenue (€)', 'Charging cost (€)']
         results = results.drop(['ondis','onch','profit'],axis=1)
         results.columns = col_results
         results.index = index_hours
+        gm_profit.index = index_hours
         
         #data format
         results_formatted = results + 0
@@ -251,6 +328,7 @@ if launch :
         
         #Chart display
         with Charts:
+            #Operation chart
             fig_operation = make_subplots(specs=[[{'secondary_y':True}]])
     
             fig_operation.add_trace(
@@ -295,7 +373,8 @@ if launch :
                 )
             
             st.plotly_chart(fig_operation,selection_mode='points')
-        
+            
+            #profit chart
             fig_profit = make_subplots()
             
             fig_profit.add_trace(
@@ -322,3 +401,31 @@ if launch :
                 )
             
             st.plotly_chart(fig_profit, selection_mode='points')
+            
+            #profit comparison chart
+            fig_profit_comparison = make_subplots()
+            
+            fig_profit_comparison.add_trace(
+               go.Scatter(x=results.index,
+                          y=(results['Revenue (€)'] - results['Charging cost (€)']),
+                          name='Simulation hourly profit (€)',
+                          line=dict(color='blue')
+                   ) 
+                )
+            
+            fig_profit_comparison.add_trace(
+                go.Scatter(x=results.index,
+                           y=(gm_profit),
+                           name='Historical adjusted profit (€)',
+                           line=dict(color='orange')
+                    )
+                )
+            
+            fig_profit_comparison.update_layout(
+                title_text='Hourly comparison of simulated vs historical adjusted profit',
+                yaxis = dict(
+                    title=dict(text='€'),
+                    ),
+                )
+            
+            st.plotly_chart(fig_profit_comparison, selection_mode='points')
