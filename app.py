@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import function
-from bdd import rawprices
+from bdd import rawprices, rawGM
 import pyomo.environ as pyo
 import math
 import plotly.graph_objects as go
@@ -11,52 +11,51 @@ from plotly.subplots import make_subplots
 #Interface options
 st.set_page_config(layout="wide")
 
-#Main title
-st.title("Levelized Cost of Storage Calculator")
+#Main title and documentation button
+col1, col2, col3 = st.columns([0.2,0.6,0.2], gap="large")
+with col2:
+    st.markdown('<center><h3>Levelized Cost of Storage Calculator</h3></center>',unsafe_allow_html=True)
+
+with col1:
+    launch = st.button('Launch calculator',type="primary")
+
+with col3:
+    st.link_button('Documentation','https://github.com/ad-44/LCOS_Calculator/blob/main/README.md',type="secondary")
+
 st.divider()
 
-#Side bar button to access documentation
-with st.sidebar:
-    st.link_button('Documentation','https://github.com/ad-44/LCOS_Calculator/blob/main/README.md')
-
 #Input interface
-col1, col2, col3 = st.columns([0.4,0.4,0.2], gap="large")
+with st.sidebar:
+    st.markdown('<center><b style="font-size:20px;">Inputs</b></center>',unsafe_allow_html=True)
+    st.divider()
 
-with col2:
-    st.subheader("Inputs")
-
-with st.container(border=True):
-    col4, col5, col6 = st.columns(3, gap="large")
-    
     #Inputs
-    with col4: 
-        st.subheader('Storage system')
-        power = st.number_input('Installed capacity (MW)',0.0,5000.0,step=1.0)
-        capacity = st.number_input('Storage capacity (MWh)',0.0,5000.0,step=1.0)
-        eff = st.number_input('Round Trip Efficiency (%)',0,100)
-    with col5:
-        st.subheader('Costs and lifetime')
-        capexmw = st.number_input('Capital expenditures (k€/MW)',0.0,5000.0,step=10.0)
-        opexmw = st.number_input('Operational expenditures (k€/MW)',0.0,5000.0,step=10.0)
-        life = st.number_input('Lifetime',0,100)
-        discount = st.number_input('Discount Rate (%)',0.0,100.0,step=0.5)
-    with col6:
-        st.subheader('Model parameters')
-        spot_year = st.selectbox(
-            'Year to simulate',
-            ('2014','2015','2016','2017','2018','2019','2020','2021','2022','2023'),
-            index=None,
-            placeholder='Select a year...'
-            )
-        model = st.selectbox(
-            'Optimisation time window',
-            ('Year','Month','Week','2 days','1 day'),
-            index=None,
-            placeholder='Select a model...'
-            )   
+    st.markdown('<b style="font-size:16px;">Storage system</b>',unsafe_allow_html=True)
+    power = st.number_input('Installed capacity (MW)',0.0,5000.0,step=1.0)
+    capacity = st.number_input('Storage capacity (MWh)',0.0,5000.0,step=1.0)
+    eff = st.number_input('Round Trip Efficiency (%)',0,100)
+    
+    st.markdown('<b style="font-size:16px;">Costs and lifetime</b>',unsafe_allow_html=True)
+    capexmw = st.number_input('Capital expenditures (k€/MW)',0.0,5000.0,step=10.0)
+    opexmw = st.number_input('Operational expenditures (k€/MW)',0.0,5000.0,step=10.0)
+    life = st.number_input('Lifetime (year)',0,100)
+    discount = st.number_input('Discount Rate (%)',0.0,100.0,step=0.5)
+
+    st.markdown('<b style="font-size:16px;">Model parameters</b>',unsafe_allow_html=True)
+    spot_year = st.selectbox(
+        'Year to simulate',
+        ('2014','2015','2016','2017','2018','2019','2020','2021','2022','2023'),
+        index=None,
+        placeholder='Select a year...'
+        )
+    model = st.selectbox(
+        'Optimisation time window',
+        ('Year','Month','Week','2 days','1 day'),
+        index=None,
+        placeholder='Select a model...'
+        )   
     
     #Launch calculator button
-    launch = st.button('Launch calculator')
     input_list = [power,capacity,eff,capexmw,opexmw,life,discount,spot_year,model]
     zero_list = [power,capacity,eff,life,discount]
     
@@ -194,12 +193,12 @@ if launch :
         
         #model parameters df
         index_mp = ['Installed capacity (MW)','Storage capacity (MWh)','Round trip efficiency (%)','Capital expenditures (€)',
-        'Operational expenditure (€)','Lifetime', 'Discount rate (%)']
+        'Operational expenditure (€)','Lifetime (years)', 'Discount rate (%)']
         data_mp = [power,capacity,eff,capex,opex,life,discount]
         model_parameters = pd.DataFrame(data_mp,index_mp, columns=['Values'])
         
         #results synthesis df
-        index_synt = ['Volume of charged energy (MWh)', 'Volume of discharged energy (MWh)','Levelized cost of storage (€/MWh)', 'Levelized cost of storage without charging cost (€/MWh)', 'Revenue (€)', 'Charging cost (€)','Profit (€)']
+        index_synt = ['Volume of charged energy (MWh)', 'Volume of discharged energy (MWh)','Levelized cost of storage (€/MWh)', 'Levelized cost of storage without charging cost (€/MWh)', 'Revenue (€)', 'Charging cost (€)','Operational annual profit (€)']
         data_synt = [sumch,sumdis,lcos,lcoswc,sumdisp,sumchp,profit]
         synthesis = pd.DataFrame(data_synt,index_synt,columns=['Values'])
         
@@ -221,13 +220,15 @@ if launch :
         results_formatted = results_formatted.style.format("{:,.1f}")
         model_parameters = model_parameters.style.format("{:,.1f}")
         
-        #Ouput display
-        col7, col8, col9 = st.columns([0.4,0.4,0.2], gap="large")
-            
-        with col8:
-            st.subheader("Outputs")
+        #creation of negative costs variables
+        negchcost = - results['Charging cost (€)']
         
-        Data, Charts = st.tabs(['Data','Charts'])
+        #Ouput display
+        
+        st.markdown('<center><b style="font-size:20px;">Outputs</b></center>',unsafe_allow_html=True)
+
+        tab_names = ["Data", "Charts"]
+        Data, Charts = st.tabs(tab_names)
         
         with Data:
             
@@ -236,13 +237,13 @@ if launch :
                 col10, col11 = st.columns(2,gap="large")
                 
                 with col10: 
-                    st.subheader("Model parameters")
+                    st.markdown('<em style="font-size:18px;">Model parameters</em>',unsafe_allow_html=True)
                     st.dataframe(model_parameters,width=500)
                 with col11: 
-                    st.subheader('Results synthesis')
+                    st.markdown('<em style="font-size:18px;">Results synthesis</em>',unsafe_allow_html=True)
                     st.dataframe(synthesis, width=500)
                     
-                st.subheader("Hourly results")
+                st.markdown('<em style="font-size:18px;">Hourly results</em>',unsafe_allow_html=True)
                 st.dataframe(results_formatted, width=1500)
         
         #Chart display
@@ -250,17 +251,29 @@ if launch :
             fig_operation = make_subplots(specs=[[{'secondary_y':True}]])
     
             fig_operation.add_trace(
-                go.Scatter(x=results.index,y=results['Stock (MWh)'],fill='tozeroy',name='Stock (MWh)'),
+                go.Scatter(x=results.index,y=results['Stock (MWh)'],
+                           fill='tozeroy',
+                           name='Stock (MWh)',
+                           line= dict(color='lightgrey')
+                    ),
                 secondary_y=True
                 )
     
             fig_operation.add_trace(
-                go.Bar(x=results.index,y=results['Charged energy (MW)'], name='Charged energy (MW)'),
+                go.Bar(x=results.index,
+                       y=results['Charged energy (MW)'], 
+                       marker = {'color':'blue'},
+                       name='Charged energy (MW)'
+                    ),
                 secondary_y=False
                 )
     
             fig_operation.add_trace(
-                go.Bar(x=results.index,y=results['Discharged energy (MW)'],name='Discharged energy (MW)'),
+                go.Bar(x=results.index,
+                       y=results['Discharged energy (MW)'],
+                       marker = {'color':'red'},
+                       name='Discharged energy (MW)'
+                    ),
                 secondary_y=False
                 )
             
@@ -283,7 +296,19 @@ if launch :
             fig_profit = make_subplots()
             
             fig_profit.add_trace(
-                go.Scatter(x=results.index, y=(results['Revenue (€)'] - results['Charging cost (€)']), name='Profit (€)')
+                go.Scatter(x=results.index, 
+                           y=(results['Revenue (€)']), 
+                           name='Hourly revenue (€)',
+                           line=dict(color='blue')
+                    )
+                )
+            
+            fig_profit.add_trace(
+                go.Scatter(x=results.index, 
+                           y=(negchcost), 
+                           name='Hourly charging cost (€)',
+                           line=dict(color='red')
+                    )
                 )
             
             fig_profit.update_layout(
@@ -294,5 +319,3 @@ if launch :
                 )
             
             st.plotly_chart(fig_profit, selection_mode='points')
-else: 
-    pass
