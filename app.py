@@ -9,7 +9,10 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 #Interface options
-st.set_page_config(layout="wide")
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 #Main title and documentation button
 col1, col2, col3 = st.columns([0.2,0.6,0.2], gap="large")
