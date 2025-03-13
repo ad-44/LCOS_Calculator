@@ -44,7 +44,7 @@ In order to give an approximate LCOS value, this calculator optimizes the yearly
 ## Usage
 ### Inputs
 
-<img align="left" src="https://github.com/ad-44/LCOS_Calculator/blob/main/screenshots/Inputs.png?raw=true" height="600" /> &nbsp;
+<img align="left" src="https://github.com/ad-44/LCOS_Calculator/blob/main/screenshots/Inputs.png?raw=true" height="800" /> &nbsp;
 
 All user inputs are done in the sidebar of the calculator. The reset button will reset all inputs value to 0.
 
@@ -64,7 +64,17 @@ All user inputs are done in the sidebar of the calculator. The reset button will
 - *Lifetime* : duration of the storage system exploitation
 - *Discount rate* : interest rate use to calculate the LCOS
 
-Calculation will be launched after clicking the "Launch calculator" button on the down left corner. All inputs need to be filled in by the user before starting the calculator.
+Calculation will be launched after clicking the "Launch calculator" button on left of the main page title. All inputs need to be filled in by the user before starting the calculator.
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 ### Outputs
 
