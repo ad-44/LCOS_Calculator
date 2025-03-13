@@ -17,3 +17,7 @@ def lcos_func(capex,crf,sumchp,opex,sumdis):
 def lcoswc_func(capex,crf,opex,sumdis):
     lcoswc = ((capex*crf)+opex)/sumdis
     return lcoswc
+    
+def ltp(crf,profit):
+    lifetime_profit = profit + (profit/crf)
+    return lifetime_profit
