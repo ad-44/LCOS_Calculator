@@ -277,6 +277,7 @@ if launch :
         lcos = function.lcos_func(capex, crf, sumchp, opex, sumdis)
         lcoswc = function.lcoswc_func(capex, crf, opex, sumdis)
         profit = sum(results['profit'])
+        lt_profit = function.ltp(crf,profit)
         
         #model parameters df
         index_mp = ['Installed capacity (MW)','Storage capacity (MWh)','Round trip efficiency (%)','Capital expenditures (€)',
@@ -285,8 +286,8 @@ if launch :
         model_parameters = pd.DataFrame(data_mp,index_mp, columns=['Values'])
         
         #results synthesis df
-        index_synt = ['Volume of charged energy (MWh)', 'Volume of discharged energy (MWh)','Levelized cost of storage (€/MWh)', 'Levelized cost of storage without charging cost (€/MWh)', 'Revenue (€)', 'Charging cost (€)','Operational annual profit (€)']
-        data_synt = [sumch,sumdis,lcos,lcoswc,sumdisp,sumchp,profit]
+        index_synt = ['Volume of charged energy (MWh)', 'Volume of discharged energy (MWh)','Levelized cost of storage (€/MWh)', 'Levelized cost of storage without charging cost (€/MWh)', 'Revenue (€)', 'Charging cost (€)','Operational annual profit (€)', 'Lifetime levelized profit (€)']
+        data_synt = [sumch,sumdis,lcos,lcoswc,sumdisp,sumchp,profit, lt_profit]
         synthesis = pd.DataFrame(data_synt,index_synt,columns=['Values'])
         
         #hourly results df
