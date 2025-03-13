@@ -2,7 +2,7 @@
 
 Calculator developed under python using streamlit to ease the calculation of the levelized cost of storage indicator.
 
-![Calculator](https://github.com/ad-44/LCOS_Calculator/blob/main/screenshots/Inputs.png?raw=true)
+![Calculator](https://github.com/ad-44/LCOS_Calculator/blob/main/screenshots/mainpage.png?raw=true)
 
 Access Link : https://lcoscalculator-crdftwyzdozbj8e9gkjgej.streamlit.app/
 
@@ -44,7 +44,14 @@ In order to give an approximate LCOS value, this calculator optimizes the yearly
 ## Usage
 ### Inputs
 
-![Calculator](https://github.com/ad-44/LCOS_Calculator/blob/main/screenshots/Inputs.png?raw=true)
+<img align="left" src="https://github.com/ad-44/LCOS_Calculator/blob/main/screenshots/Inputs.png?raw=true" height="600" /> &nbsp;
+
+All user inputs are done in the sidebar of the calculator. The reset button will reset all inputs value to 0.
+
+**Model parameters:**
+- *Year to simulate* : spot market year use to optimize the storage operation
+- *Optimization time window* : time window use to optimize the storage operation. If "week" is selected, the calculator will optimize the profit of the storage system over a single week, then over the next one... Until the end of the year.
+- *Preload a storage profile (optional)* : load all parameters for a define storage profile.
 
 **Storage system:**
 - *Installed capacity* : nominal power of the storage system in MW
@@ -56,10 +63,6 @@ In order to give an approximate LCOS value, this calculator optimizes the yearly
 - *Operational expenditures* : expenses inherent to the storage operation in k€/MW
 - *Lifetime* : duration of the storage system exploitation
 - *Discount rate* : interest rate use to calculate the LCOS
-
-**Model parameters:**
-- *Year to simulate* : spot market year use to optimize the storage operation
-- *Optimization time window* : time window use to optimize the storage operation. If "week" is selected, the calculator will optimize the profit of the storage system over a single week, then over the next one... Until the end of the year. 
 
 Calculation will be launched after clicking the "Launch calculator" button on the down left corner. All inputs need to be filled in by the user before starting the calculator.
 
